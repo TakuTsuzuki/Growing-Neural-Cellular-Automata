@@ -5,23 +5,27 @@ import torch.optim as optim
 import torch.nn.functional as F
 
 class CAModel(nn.Module):
+    # Network structure
     def __init__(self, channel_n, fire_rate, device, hidden_size=128):
         super(CAModel, self).__init__()
 
-        self.device = device
+        self.device = device 
         self.channel_n = channel_n
 
         self.fc0 = nn.Linear(channel_n*3, hidden_size)
         self.fc1 = nn.Linear(hidden_size, channel_n, bias=False)
+        # Initializarion
         with torch.no_grad():
             self.fc1.weight.zero_()
 
         self.fire_rate = fire_rate
         self.to(self.device)
 
+    # alpha channel: x: alpha values including neighbor cells 
     def alive(self, x):
         return F.max_pool2d(x[:, 3:4, :, :], kernel_size=3, stride=1, padding=1) > 0.1
-
+    
+    # angle: angle of a target pattern. Usually 0.0
     def perceive(self, x, angle):
 
         def _perceive_with(x, weight):
